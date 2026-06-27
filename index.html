@@ -9,226 +9,693 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Bebas+Neue&family=Luckiest+Guy&family=Cormorant+Garamond:ital@1&display=swap" rel="stylesheet">
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  html,body { height:100%; background:#04060c; overflow:hidden; }
-  .hero { position:relative; width:100vw; height:100vh; overflow:hidden; cursor:none; }
-  .hero::before {
-    content:''; position:absolute; top:0; left:0; right:0; height:4px; z-index:20;
-    background:linear-gradient(90deg, transparent, #F4C430, #C0001A, #F4C430, transparent);
-  }
-  .hero-canvas { position:absolute; inset:0; width:100%; height:100%; display:block; z-index:0; }
-  .content { position:absolute; inset:0; z-index:10; pointer-events:none; }
+/* ═══════════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════════ */
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body { background:#04060c; color:#fff; font-family:'Bebas Neue',sans-serif; }
 
-  .logo {
-    position:absolute; top:34px; left:50%; transform:translateX(-50%); z-index:15;
-    text-align:center; pointer-events:none;
-  }
-  .logo .op {
-    font-family:'Luckiest Guy', cursive; font-size:64px; line-height:0.9;
-    letter-spacing:0.02em; text-transform:uppercase;
-    color:#F7D446;
-    -webkit-text-stroke:3px #0a1a3a;
-    text-shadow:
-      0 4px 0 #b3001a,
-      0 6px 0 #0a1a3a,
-      0 0 24px rgba(244,196,48,0.45);
-  }
-  .logo .tag {
-    margin-top:2px; font-family:'Bebas Neue',sans-serif; font-size:15px;
-    letter-spacing:0.5em; color:#fff; text-shadow:0 0 8px rgba(0,0,0,0.8);
-    padding-left:0.5em;
-  }
+/* ═══════════════════════════════════════════════
+   LOADING SCREEN
+═══════════════════════════════════════════════ */
+#loader {
+  position:fixed; inset:0; z-index:9999;
+  background-color:#04060c;
+  background-image:radial-gradient(ellipse 80% 60% at 50% 55%, #0d1f3c 0%, transparent 70%);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:0;
+  transition:opacity .7s ease, visibility .7s ease;
+}
+#loader.hidden { opacity:0; visibility:hidden; pointer-events:none; }
 
-  .left {
-    position:absolute; bottom:64px; left:64px; width:360px;
-    display:flex; flex-direction:column; gap:16px;
-  }
-  .right {
-    position:absolute; top:54%; right:64px; transform:translateY(-50%);
-    width:380px; text-align:right; display:flex; flex-direction:column; gap:14px; align-items:flex-end;
-  }
-  .eyebrow {
-    font-family:'Bebas Neue',sans-serif; font-size:15px; letter-spacing:0.35em;
-    text-transform:uppercase; color:#F4C430; padding-left:1.4rem; position:relative;
-  }
-  .eyebrow::before {
-    content:''; position:absolute; left:0; top:50%; transform:translateY(-50%);
-    width:1rem; height:1.5px; background:#F4C430;
-  }
-  .right .eyebrow { color:#ff5a6e; padding:0 1.4rem 0 0; }
-  .right .eyebrow::before { left:auto; right:0; background:#ff5a6e; }
+/* Ocean water */
+.ocean {
+  position:relative; width:360px; height:160px; overflow:hidden;
+  margin-bottom:0; flex-shrink:0;
+}
+.wave {
+  position:absolute; bottom:0; left:0; width:200%; height:70px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 70'%3E%3Cpath d='M0 35 Q100 5 200 35 Q300 65 400 35 Q500 5 600 35 Q700 65 800 35 L800 70 L0 70 Z' fill='%23122d5a'/%3E%3C/svg%3E") repeat-x bottom;
+  background-size:400px 70px;
+}
+.wave1 { animation:wave1 3s linear infinite; opacity:1; }
+.wave2 {
+  animation:wave2 4.2s linear infinite; opacity:0.5;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 70'%3E%3Cpath d='M0 35 Q100 5 200 35 Q300 65 400 35 Q500 5 600 35 Q700 65 800 35 L800 70 L0 70 Z' fill='%231a3f7a'/%3E%3C/svg%3E");
+  background-size:400px 70px;
+}
+@keyframes wave1 { from{transform:translateX(0)} to{transform:translateX(-400px)} }
+@keyframes wave2 { from{transform:translateX(0)} to{transform:translateX(400px)} }
 
-  .title {
-    font-family:'Bangers', cursive; font-size:78px; line-height:0.92; color:#fff;
-    text-transform:uppercase; letter-spacing:0.02em;
-    text-shadow:3px 3px 0 #b3001a, 0 0 14px rgba(192,0,26,0.5), 0 0 36px rgba(192,0,26,0.3);
-  }
-  .right .title {
-    font-size:62px; color:#fff;
-    text-shadow:3px 3px 0 #6a3fb3, 0 0 16px rgba(180,120,255,0.5), 0 0 40px rgba(180,120,255,0.3);
-  }
-  .desc {
-    font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:19px;
-    line-height:1.6; color:rgba(255,255,255,0.82);
-  }
-  .btn {
-    font-family:'Bebas Neue',sans-serif; font-size:17px; letter-spacing:0.2em; text-transform:uppercase;
-    padding:14px 28px; background:transparent; color:#fff; border:2px solid #F4C430;
-    cursor:pointer; align-self:flex-start; position:relative; overflow:hidden; isolation:isolate;
-    clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%); pointer-events:all;
-    transition:border-color .3s, color .3s;
-  }
-  .btn::after {
-    content:''; position:absolute; inset:0; background:#F4C430;
-    transform:translateX(-105%) skewX(-8deg); transition:transform .38s cubic-bezier(.4,0,.2,1); z-index:-1;
-  }
-  .btn:hover { border-color:#ffe066; color:#1a0a00; }
-  .btn:hover::after { transform:translateX(0) skewX(-8deg); }
+/* Ship — sits on waves, not buried in ocean box */
+.ship-wrap {
+  position:absolute; bottom:50px; left:50%; transform:translateX(-50%);
+  animation:float 2.8s ease-in-out infinite; z-index:2;
+}
+.ship-wrap img { width:170px; filter:drop-shadow(0 6px 18px rgba(0,80,200,0.5)); display:block; }
+@keyframes float {
+  0%,100% { transform:translateX(-50%) translateY(0)    rotate(-1.5deg); }
+  50%      { transform:translateX(-50%) translateY(-12px) rotate(1.5deg); }
+}
 
-  .hint {
-    position:absolute; left:50%; bottom:24px; transform:translateX(-50%); z-index:16;
-    font-family:'Bebas Neue',sans-serif; letter-spacing:0.25em; font-size:14px; color:#fff;
-    background:rgba(0,0,0,0.45); padding:8px 18px; border-radius:999px; pointer-events:none;
-    transition:opacity .5s;
-  }
-  @media (max-width:680px){
-    .logo .op{font-size:38px;} .logo .tag{font-size:11px; letter-spacing:0.3em;}
-    .left{left:22px; bottom:34px; width:62%;} .right{right:22px; width:58%;}
-    .title{font-size:42px;} .right .title{font-size:34px;} .desc{font-size:15px;}
-    .btn{font-size:14px; padding:11px 18px;}
-  }
+/* Loader text */
+.loader-title {
+  font-family:'Luckiest Guy',cursive; font-size:42px; letter-spacing:0.05em;
+  color:#F7D446; -webkit-text-stroke:2px #0a1a3a;
+  text-shadow:0 3px 0 #b3001a, 0 0 20px rgba(244,196,48,0.5);
+  margin-top:18px;
+}
+.loader-sub {
+  font-family:'Bebas Neue',sans-serif; font-size:14px; letter-spacing:0.4em;
+  color:rgba(255,255,255,0.55); margin-top:6px;
+}
+.loader-bar-wrap {
+  width:220px; height:3px; background:rgba(255,255,255,0.12);
+  border-radius:99px; margin-top:22px; overflow:hidden;
+}
+.loader-bar {
+  height:100%; width:0%; background:linear-gradient(90deg,#F4C430,#ff5a6e);
+  border-radius:99px; animation:loadbar 2.2s ease forwards;
+}
+@keyframes loadbar { 0%{width:0%} 60%{width:75%} 100%{width:100%} }
+
+/* ═══════════════════════════════════════════════
+   PAGE WRAPPER — vertical scroll
+═══════════════════════════════════════════════ */
+#page {
+  height:100vh; overflow-y:auto; overflow-x:hidden;
+  /* On mobile, require 2-finger pan to scroll */
+  touch-action:pan-y;
+}
+/* Override: hero itself needs single-touch for the reveal drag */
+#hero { touch-action:none; }
+
+/* ═══════════════════════════════════════════════
+   HERO
+═══════════════════════════════════════════════ */
+.hero {
+  position:relative; width:100vw; height:100vh;
+  overflow:hidden; cursor:pointer; flex-shrink:0;
+}
+.hero::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:4px; z-index:20;
+  background:linear-gradient(90deg, transparent, #F4C430, #C0001A, #F4C430, transparent);
+}
+.hero-canvas { position:absolute; inset:0; width:100%; height:100%; display:block; z-index:0; will-change:transform; transform:translateZ(0); }
+.content     { position:absolute; inset:0; z-index:10; pointer-events:none; }
+
+.logo {
+  position:absolute; top:34px; left:50%; transform:translateX(-50%); z-index:15;
+  text-align:center; pointer-events:none;
+}
+.logo .op {
+  font-family:'Luckiest Guy',cursive; font-size:64px; line-height:0.9;
+  letter-spacing:0.02em; text-transform:uppercase; color:#F7D446;
+  -webkit-text-stroke:3px #0a1a3a;
+  text-shadow:0 4px 0 #b3001a, 0 6px 0 #0a1a3a, 0 0 24px rgba(244,196,48,0.45);
+}
+.logo .tag {
+  margin-top:2px; font-family:'Bebas Neue',sans-serif; font-size:15px;
+  letter-spacing:0.5em; color:#fff; text-shadow:0 0 8px rgba(0,0,0,0.8);
+  padding-left:0.5em;
+}
+
+.left {
+  position:absolute; bottom:64px; left:64px; width:360px;
+  display:flex; flex-direction:column; gap:16px;
+}
+.right {
+  position:absolute; top:54%; right:64px; transform:translateY(-50%);
+  width:380px; text-align:right; display:flex; flex-direction:column; gap:14px; align-items:flex-end;
+}
+.eyebrow {
+  font-family:'Bebas Neue',sans-serif; font-size:15px; letter-spacing:0.35em;
+  text-transform:uppercase; color:#F4C430; padding-left:1.4rem; position:relative;
+}
+.eyebrow::before {
+  content:''; position:absolute; left:0; top:50%; transform:translateY(-50%);
+  width:1rem; height:1.5px; background:#F4C430;
+}
+.right .eyebrow { color:#ff5a6e; padding:0 1.4rem 0 0; }
+.right .eyebrow::before { left:auto; right:0; background:#ff5a6e; }
+
+.title {
+  font-family:'Bangers',cursive; font-size:78px; line-height:0.92; color:#fff;
+  text-transform:uppercase; letter-spacing:0.02em;
+  text-shadow:3px 3px 0 #b3001a, 0 0 14px rgba(192,0,26,0.5), 0 0 36px rgba(192,0,26,0.3);
+}
+.right .title {
+  font-size:62px;
+  text-shadow:3px 3px 0 #6a3fb3, 0 0 16px rgba(180,120,255,0.5), 0 0 40px rgba(180,120,255,0.3);
+}
+.desc {
+  font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:19px;
+  line-height:1.6; color:rgba(255,255,255,0.82);
+}
+.btn {
+  font-family:'Bebas Neue',sans-serif; font-size:17px; letter-spacing:0.2em;
+  padding:14px 28px; background:transparent; color:#fff; border:2px solid #F4C430;
+  cursor:pointer; align-self:flex-start; position:relative; overflow:hidden; isolation:isolate;
+  clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);
+  pointer-events:all; transition:border-color .3s,color .3s;
+}
+.btn::after {
+  content:''; position:absolute; inset:0; background:#F4C430;
+  transform:translateX(-105%) skewX(-8deg); transition:transform .38s cubic-bezier(.4,0,.2,1); z-index:-1;
+}
+.btn:hover { border-color:#ffe066; color:#1a0a00; }
+.btn:hover::after { transform:translateX(0) skewX(-8deg); }
+
+.hint {
+  position:absolute; left:50%; bottom:24px; transform:translateX(-50%); z-index:16;
+  font-family:'Bebas Neue',sans-serif; letter-spacing:0.25em; font-size:14px; color:#fff;
+  background:rgba(0,0,0,0.45); padding:8px 18px; border-radius:999px; pointer-events:none;
+  transition:opacity .5s;
+}
+
+/* scroll nudge arrow at bottom of hero */
+.scroll-nudge {
+  position:absolute; bottom:60px; left:50%; transform:translateX(-50%); z-index:17;
+  display:flex; flex-direction:column; align-items:center; gap:4px; pointer-events:none;
+  animation:nudge 2s ease-in-out infinite;
+  opacity:0; transition:opacity 1s;
+}
+.scroll-nudge.visible { opacity:1; }
+.scroll-nudge span {
+  font-family:'Bebas Neue',sans-serif; font-size:11px; letter-spacing:0.3em;
+  color:rgba(255,255,255,0.5);
+}
+.scroll-nudge svg { opacity:0.5; }
+@keyframes nudge { 0%,100%{transform:translateX(-50%) translateY(0)} 50%{transform:translateX(-50%) translateY(6px)} }
+
+/* ═══════════════════════════════════════════════
+   CONTACT SECTION
+═══════════════════════════════════════════════ */
+.contact-section {
+  position:relative; width:100%; min-height:100vh;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:80px 24px 60px;
+  background:radial-gradient(ellipse at 50% 0%, #0f1e3a 0%, #04060c 60%);
+  overflow:hidden;
+}
+
+/* decorative top line */
+.contact-section::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  background:linear-gradient(90deg,transparent,#F4C430,#C0001A,#F4C430,transparent);
+}
+
+/* floating skull stars bg */
+.contact-section::after {
+  content:'★ ✦ ☠ ✦ ★';
+  position:absolute; top:32px; left:50%; transform:translateX(-50%);
+  font-size:20px; letter-spacing:28px; color:rgba(244,196,48,0.12);
+  white-space:nowrap; pointer-events:none;
+}
+
+.contact-eyebrow {
+  font-family:'Bebas Neue',sans-serif; font-size:13px; letter-spacing:0.5em;
+  color:#F4C430; margin-bottom:12px; text-align:center;
+  position:relative;
+}
+.contact-eyebrow::before,.contact-eyebrow::after {
+  content:''; display:inline-block; width:40px; height:1px;
+  background:#F4C430; vertical-align:middle; margin:0 14px;
+}
+
+.contact-title {
+  font-family:'Bangers',cursive; font-size:72px; line-height:0.95;
+  text-align:center; color:#fff;
+  text-shadow:4px 4px 0 #b3001a, 0 0 30px rgba(192,0,26,0.4);
+  margin-bottom:10px;
+}
+
+.contact-sub {
+  font-family:'Cormorant Garamond',Georgia,serif; font-style:italic;
+  font-size:18px; color:rgba(255,255,255,0.55); text-align:center;
+  max-width:480px; line-height:1.6; margin-bottom:52px;
+}
+
+/* The big email card */
+.mail-card {
+  position:relative; display:inline-flex; align-items:center; gap:18px;
+  padding:28px 44px; border:1.5px solid rgba(244,196,48,0.35);
+  background:rgba(255,255,255,0.04);
+  border-radius:4px;
+  clip-path:polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%);
+  text-decoration:none; color:inherit; isolation:isolate; overflow:hidden;
+  transition:border-color .35s, color .3s, transform .3s;
+  cursor:pointer;
+}
+.mail-card::after {
+  content:''; position:absolute; inset:0; background:#F4C430;
+  transform:translateX(-105%) skewX(-8deg); transition:transform .42s cubic-bezier(.4,0,.2,1); z-index:-1;
+}
+.mail-card:hover { border-color:#ffe066; color:#1a0a00; transform:translateY(-3px); }
+.mail-card:hover::after { transform:translateX(0) skewX(-8deg); }
+.mail-card:hover .mail-label { color:rgba(26,10,0,0.6); }
+.mail-card:hover .mail-addr { color:#1a0a00; text-shadow:none; }
+.mail-card:hover .mail-icon rect { fill:rgba(26,10,0,0.1); }
+.mail-card:hover .mail-icon path { stroke:#1a0a00; }
+.mail-icon {
+  flex-shrink:0;
+}
+.mail-body { display:flex; flex-direction:column; gap:4px; }
+.mail-label {
+  font-family:'Bebas Neue',sans-serif; font-size:12px; letter-spacing:0.45em;
+  color:rgba(255,255,255,0.4); text-transform:uppercase;
+}
+.mail-addr {
+  font-family:'Bebas Neue',sans-serif; font-size:26px; letter-spacing:0.08em;
+  color:#F7D446;
+  text-shadow:0 0 12px rgba(244,196,48,0.4);
+}
+
+/* copy toast */
+.copy-toast {
+  position:fixed; bottom:32px; left:50%; transform:translateX(-50%) translateY(20px);
+  background:#F4C430; color:#1a0a00; font-family:'Bebas Neue',sans-serif;
+  font-size:15px; letter-spacing:0.2em; padding:10px 24px; border-radius:99px;
+  opacity:0; pointer-events:none; transition:opacity .3s, transform .3s; z-index:1000;
+}
+.copy-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* social row */
+.social-row {
+  display:flex; gap:20px; margin-top:40px; flex-wrap:wrap; justify-content:center;
+}
+.soc-btn {
+  font-family:'Bebas Neue',sans-serif; font-size:14px; letter-spacing:0.3em;
+  padding:11px 24px; border:1.5px solid rgba(255,255,255,0.25);
+  background:transparent; color:rgba(255,255,255,0.8);
+  position:relative; overflow:hidden; isolation:isolate;
+  clip-path:polygon(7px 0%,100% 0%,calc(100% - 7px) 100%,0% 100%);
+  cursor:pointer; text-decoration:none;
+  transition:border-color .3s, color .3s;
+}
+.soc-btn::after {
+  content:''; position:absolute; inset:0; background:#F4C430;
+  transform:translateX(-105%) skewX(-8deg); transition:transform .38s cubic-bezier(.4,0,.2,1); z-index:-1;
+}
+.soc-btn:hover { border-color:#F4C430; color:#1a0a00; }
+.soc-btn:hover::after { transform:translateX(0) skewX(-8deg); }
+
+/* mobile 2-finger hint */
+.two-finger-hint {
+  display:none;
+  position:fixed; bottom:16px; left:50%; transform:translateX(-50%);
+  z-index:200; background:rgba(0,0,0,0.7);
+  font-family:'Bebas Neue',sans-serif; font-size:12px; letter-spacing:0.25em;
+  color:rgba(255,255,255,0.7); padding:7px 18px; border-radius:99px;
+  pointer-events:none; white-space:nowrap;
+  animation:pulsehint 2.5s ease-in-out infinite;
+}
+@keyframes pulsehint { 0%,100%{opacity:.7} 50%{opacity:1} }
+
+/* ═══════════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════════ */
+footer {
+  width:100%; padding:28px 24px;
+  background:#020408;
+  border-top:1px solid rgba(244,196,48,0.15);
+  display:flex; flex-direction:column; align-items:center; gap:10px;
+  text-align:center;
+}
+.footer-logo {
+  font-family:'Luckiest Guy',cursive; font-size:22px; letter-spacing:0.04em;
+  color:#F7D446; text-shadow:0 2px 0 #b3001a;
+  text-decoration:none;
+}
+.footer-logo:hover { text-shadow:0 2px 0 #b3001a, 0 0 16px rgba(244,196,48,0.5); }
+.footer-copy {
+  font-family:'Bebas Neue',sans-serif; font-size:13px; letter-spacing:0.3em;
+  color:rgba(255,255,255,0.3);
+}
+.footer-divider {
+  width:60px; height:1px; background:rgba(244,196,48,0.25); margin:2px 0;
+}
+.footer-link {
+  font-family:'Bebas Neue',sans-serif; font-size:12px; letter-spacing:0.25em;
+  color:rgba(255,255,255,0.35); text-decoration:none;
+  transition:color .25s;
+}
+.footer-link:hover { color:#F4C430; }
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════ */
+@media (max-width:680px){
+  .logo .op{font-size:38px;} .logo .tag{font-size:11px;letter-spacing:0.3em;}
+  .left{left:22px;bottom:34px;width:62%;} .right{right:22px;width:58%;}
+  .title{font-size:42px;} .right .title{font-size:34px;} .desc{font-size:15px;}
+  .btn{font-size:14px;padding:11px 18px;}
+  .contact-title{font-size:48px;}
+  .mail-card{padding:20px 24px; gap:14px;}
+  .mail-addr{font-size:18px;}
+  /* show 2-finger hint only on touch devices */
+  .two-finger-hint{display:block;}
+  /* hint bar moves up a bit so it doesn't clash with footer on short screens */
+  .hint{bottom:56px;}
+}
 </style>
 </head>
 <body>
-<div class="hero" id="hero">
-  <canvas class="hero-canvas" id="cv"></canvas>
 
-  <div class="logo">
-    <div class="op">One Piece</div>
-    <div class="tag">GEAR&nbsp;&nbsp;5 &nbsp;&middot;&nbsp; AWAKENING</div>
-  </div>
-
-  <div class="content">
-    <div class="left">
-      <span class="eyebrow">Straw Hat Pirates</span>
-      <h1 class="title">MONKEY D.<br>LUFFY</h1>
-      <p class="desc">The boy who would be King of the Pirates. Rubber fists, an iron will, and a grin that never quits &mdash; chasing the world's greatest treasure.</p>
-      <button class="btn">Set Sail</button>
+<!-- ══════════════ LOADING SCREEN ══════════════ -->
+<div id="loader">
+  <div class="ocean">
+    <div class="ship-wrap">
+      <img src="https://luffykidlaw.indevs.in/ship.webp" alt="Going Merry">
     </div>
-    <div class="right">
-      <span class="eyebrow">Joy Boy Awakened</span>
-      <h1 class="title">GEAR<br>FIVE</h1>
-      <p class="desc">The Warrior of Liberation. Laughter becomes power, the world bends to imagination &mdash; the truest form of the Nika Devil Fruit.</p>
-    </div>
+    <div class="wave wave1"></div>
+    <div class="wave wave2"></div>
   </div>
-
-  <div class="hint" id="hint">&#9656; MOVE ACROSS TO AWAKEN GEAR 5 &#9666;</div>
+  <div class="loader-title">ONE PIECE</div>
+  <div class="loader-sub">SETTING SAIL &nbsp;·&nbsp; PLEASE WAIT</div>
+  <div class="loader-bar-wrap"><div class="loader-bar" id="loaderBar"></div></div>
 </div>
 
+<!-- ══════════════ COPY TOAST ══════════════ -->
+<div class="copy-toast" id="copyToast">EMAIL COPIED!</div>
+
+<!-- ══════════════ 2-FINGER HINT (mobile) ══════════════ -->
+<div class="two-finger-hint" id="twoFingerHint">USE 2 FINGERS TO SCROLL</div>
+
+<!-- ══════════════ PAGE (scrollable) ══════════════ -->
+<div id="page">
+
+  <!-- HERO -->
+  <div class="hero" id="hero">
+    <canvas class="hero-canvas" id="cv"></canvas>
+
+    <div class="logo">
+      <div class="op">One Piece</div>
+      <div class="tag" id="logoTag">GEAR&nbsp;&nbsp;5 &nbsp;&middot;&nbsp; AWAKENING</div>
+    </div>
+
+    <div class="content">
+      <div class="left">
+        <span class="eyebrow">Straw Hat Pirates</span>
+        <h1 class="title">MONKEY D.<br>LUFFY</h1>
+        <p class="desc">The boy who would be King of the Pirates. Rubber fists, an iron will, and a grin that never quits &mdash; chasing the world's greatest treasure.</p>
+        <button class="btn">Set Sail</button>
+      </div>
+      <div class="right">
+        <span class="eyebrow" id="rightEyebrow">Joy Boy Awakened</span>
+        <h1 class="title" id="rightTitle">GEAR<br>FIVE</h1>
+        <p class="desc" id="rightDesc">The Warrior of Liberation. Laughter becomes power, the world bends to imagination &mdash; the truest form of the Nika Devil Fruit.</p>
+      </div>
+    </div>
+
+    <div class="hint" id="hint">&#9656; MOVE ACROSS TO REVEAL &nbsp;|&nbsp; CLICK TO CYCLE GEARS &#9666;</div>
+
+    <!-- scroll nudge — shown after 3s on desktop -->
+    <div class="scroll-nudge" id="scrollNudge">
+      <span>SCROLL DOWN</span>
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M10 4v12M5 11l5 5 5-5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- CONTACT SECTION -->
+  <section class="contact-section" id="contact">
+    <div class="contact-eyebrow">Send a Message</div>
+    <h2 class="contact-title">REACH OUT</h2>
+    <p class="contact-sub">Got a collab, project idea, or just want to talk One Piece? Drop a mail — I read every one.</p>
+
+    <!-- Email card — click copies, href opens mail client -->
+    <a class="mail-card" href="mailto:contact@wondermayank.indevs.in" id="mailCard">
+      <div class="mail-icon">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+          <rect width="40" height="40" rx="8" fill="rgba(244,196,48,0.10)"/>
+          <path d="M8 13h24v16H8z" stroke="#F4C430" stroke-width="1.5" stroke-linejoin="round" fill="none"/>
+          <path d="M8 13l12 9 12-9" stroke="#F4C430" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="mail-body">
+        <span class="mail-label">Email</span>
+        <span class="mail-addr">contact@wondermayank.indevs.in</span>
+      </div>
+    </a>
+
+    <div class="social-row">
+      <a class="soc-btn" href="https://wondermayank.in" target="_blank" rel="noopener">wondermayank.in</a>
+      <a class="soc-btn" href="https://t.me/wondermayank" target="_blank" rel="noopener">Telegram</a>
+      <a class="soc-btn" href="https://luffykidlaw.indevs.in" target="_blank" rel="noopener">This Site</a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <a class="footer-logo" href="https://wondermayank.in" target="_blank" rel="noopener">Wondermayank</a>
+    <div class="footer-divider"></div>
+    <p class="footer-copy">Owned &amp; built by &nbsp;<a class="footer-link" href="https://wondermayank.in" target="_blank" rel="noopener">wondermayank.in</a></p>
+    <p class="footer-copy">&copy; 2024 &nbsp;·&nbsp; Free forever for students &nbsp;·&nbsp; One Piece Fan Site</p>
+  </footer>
+
+</div><!-- /#page -->
+
 <script>
+/* ══════════════════════════════════════
+   LOADER
+══════════════════════════════════════ */
 (function(){
-  const hero=document.getElementById('hero');
-  const canvas=document.getElementById('cv');
-  const ctx=canvas.getContext('2d');
-  const hint=document.getElementById('hint');
-  const DPR=Math.min(window.devicePixelRatio||1,2);
+  var loader = document.getElementById('loader');
+  var MIN_TIME = 2400; // ms minimum display
+  var start = Date.now();
 
-  const TRAIL_LENGTH=60;
-  let HEAD_RADIUS=190;
-  const OVERLAY='rgba(0,0,0,0.42)';
+  function dismiss(){
+    var elapsed = Date.now() - start;
+    var wait = Math.max(0, MIN_TIME - elapsed);
+    setTimeout(function(){
+      loader.classList.add('hidden');
+      // show scroll nudge after hero loads
+      setTimeout(function(){
+        document.getElementById('scrollNudge').classList.add('visible');
+      }, 3000);
+    }, wait);
+  }
 
-  const mouse={x:-9999,y:-9999};
-  const smooth={x:-9999,y:-9999};
-  let trail=[];
+  // Dismiss once page is fully loaded
+  if(document.readyState === 'complete'){ dismiss(); }
+  else { window.addEventListener('load', dismiss); }
+})();
 
-  const bottom=new Image();
-  const top=new Image();
-  bottom.src='https://luffykidlaw.indevs.in/luffy.png';
-  top.src='https://luffykidlaw.indevs.in/gear5.png';
+/* ══════════════════════════════════════
+   MOBILE 2-FINGER HINT
+══════════════════════════════════════ */
+(function(){
+  var hint = document.getElementById('twoFingerHint');
+  var page = document.getElementById('page');
+  if(!hint) return;
 
-  const off=document.createElement('canvas');
-  const offc=off.getContext('2d');
+  // Show hint briefly when user tries single-finger scroll on mobile
+  var hintTimer;
+  page.addEventListener('touchstart', function(e){
+    if(e.touches.length === 1){
+      // single finger — flash the hint
+      hint.style.opacity = '1';
+      clearTimeout(hintTimer);
+      hintTimer = setTimeout(function(){ hint.style.opacity = '0'; }, 2000);
+    } else {
+      hint.style.opacity = '0';
+    }
+  }, {passive:true});
+})();
 
-  function cover(img,cw,ch){
-    const ir=img.width/img.height, cr=cw/ch;
-    let w,h,x,y;
-    if(ir>cr){ h=ch; w=ch*ir; x=(cw-w)/2; y=0; }
-    else { w=cw; h=cw/ir; x=0; y=(ch-h)/2; }
+/* ══════════════════════════════════════
+   EMAIL COPY ON CARD CLICK
+══════════════════════════════════════ */
+(function(){
+  var card  = document.getElementById('mailCard');
+  var toast = document.getElementById('copyToast');
+  var timer;
+  card.addEventListener('click', function(e){
+    e.preventDefault();
+    navigator.clipboard.writeText('contact@wondermayank.indevs.in').catch(function(){
+      /* fallback */
+      var ta = document.createElement('textarea');
+      ta.value = 'contact@wondermayank.indevs.in';
+      document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+    });
+    toast.classList.add('show');
+    clearTimeout(timer);
+    timer = setTimeout(function(){ toast.classList.remove('show'); }, 2200);
+  });
+})();
+
+/* ══════════════════════════════════════
+   HERO CANVAS REVEAL
+══════════════════════════════════════ */
+(function(){
+  var hero    = document.getElementById('hero');
+  var canvas  = document.getElementById('cv');
+  var ctx     = canvas.getContext('2d');
+  var hint    = document.getElementById('hint');
+  var logoTag      = document.getElementById('logoTag');
+  var rightEyebrow = document.getElementById('rightEyebrow');
+  var rightTitle   = document.getElementById('rightTitle');
+  var rightDesc    = document.getElementById('rightDesc');
+
+  var DPR = Math.min(window.devicePixelRatio || 1, 2);
+  var TRAIL_LENGTH = 60;
+  var HEAD_RADIUS  = 190;
+  var OVERLAY = 'rgba(0,0,0,0.42)';
+
+  var mouse  = {x:-9999, y:-9999};
+  var smooth = {x:-9999, y:-9999};
+  var trail  = [];
+
+  var GEARS = [
+    {
+      src:     'https://luffykidlaw.indevs.in/gear5.png',
+      tag:     'GEAR&nbsp;&nbsp;5 &nbsp;&middot;&nbsp; AWAKENING',
+      eyebrow: 'Joy Boy Awakened',
+      title:   'GEAR<br>FIVE',
+      desc:    'The Warrior of Liberation. Laughter becomes power, the world bends to imagination \u2014 the truest form of the Nika Devil Fruit.'
+    },
+    {
+      src:     'https://luffykidlaw.indevs.in/gear4.png',
+      tag:     'GEAR&nbsp;&nbsp;4 &nbsp;&middot;&nbsp; BOUNDMAN',
+      eyebrow: 'Armament Haki Mastered',
+      title:   'GEAR<br>FOUR',
+      desc:    'Muscle coated in Haki, the giant of the sky. Speed and power fused into one \u2014 Boundman, Tankman, Snakeman.'
+    },
+    {
+      src:     'https://luffykidlaw.indevs.in/gear3.png',
+      tag:     'GEAR&nbsp;&nbsp;3 &nbsp;&middot;&nbsp; GIANT',
+      eyebrow: 'Bone Balloon Activated',
+      title:   'GEAR<br>THREE',
+      desc:    'Air pumped into the very bones \u2014 a fist the size of a giant\u2019s. Elephant Gun, Grizzly Magnum \u2014 raw crushing power.'
+    }
+  ];
+
+  var gearImgs = GEARS.map(function(g){ var i = new Image(); i.src = g.src; return i; });
+  var activeTop = gearImgs[0];
+  var gearIndex = 0;
+
+  var bottom = new Image();
+  bottom.src = 'https://luffykidlaw.indevs.in/luffy.png';
+
+  var off  = document.createElement('canvas');
+  var offc = off.getContext('2d');
+
+  function cover(img, cw, ch){
+    var ir = img.width / img.height, cr = cw / ch;
+    var w, h, x, y;
+    if(ir > cr){ h=ch; w=ch*ir; x=(cw-w)/2; y=0; }
+    else        { w=cw; h=cw/ir; x=0; y=(ch-h)/2; }
     return [x,y,w,h];
   }
 
   function resize(){
-    const w=hero.offsetWidth,h=hero.offsetHeight;
-    canvas.width=w*DPR; canvas.height=h*DPR;
-    off.width=w*DPR; off.height=h*DPR;
+    var w = hero.offsetWidth, h = hero.offsetHeight;
+    canvas.width = w*DPR; canvas.height = h*DPR;
+    off.width    = w*DPR; off.height    = h*DPR;
     ctx.setTransform(DPR,0,0,DPR,0,0);
     offc.setTransform(DPR,0,0,DPR,0,0);
-    HEAD_RADIUS=Math.max(130,Math.min(w,h)*0.24);
+    HEAD_RADIUS = Math.max(130, Math.min(w,h)*0.24);
   }
   resize();
-  window.addEventListener('resize',resize);
+  window.addEventListener('resize', resize);
 
-  hero.addEventListener('mousemove',function(e){
-    const r=hero.getBoundingClientRect();
-    mouse.x=e.clientX-r.left; mouse.y=e.clientY-r.top;
-    hint.style.opacity=0;
+  /* Mouse */
+  hero.addEventListener('mousemove', function(e){
+    var r = hero.getBoundingClientRect();
+    mouse.x = e.clientX - r.left;
+    mouse.y = e.clientY - r.top;
+    hint.style.opacity = 0;
   });
-  hero.addEventListener('touchmove',function(e){
-    const r=hero.getBoundingClientRect(); const t=e.touches[0];
-    mouse.x=t.clientX-r.left; mouse.y=t.clientY-r.top;
-    hint.style.opacity=0;
-  },{passive:true});
+
+  /* Touch — single finger = reveal drag (hero has touch-action:none so page won't scroll) */
+  hero.addEventListener('touchmove', function(e){
+    if(e.touches.length === 1){
+      var r = hero.getBoundingClientRect(), t = e.touches[0];
+      mouse.x = t.clientX - r.left;
+      mouse.y = t.clientY - r.top;
+      hint.style.opacity = 0;
+    }
+  }, {passive:true});
+
+  /* Click — cycle gears */
+  hero.addEventListener('click', function(){
+    gearIndex = (gearIndex + 1) % GEARS.length;
+    activeTop = gearImgs[gearIndex];
+    var g = GEARS[gearIndex];
+    logoTag.innerHTML        = g.tag;
+    rightEyebrow.textContent = g.eyebrow;
+    rightTitle.innerHTML     = g.title;
+    rightDesc.textContent    = g.desc;
+    hint.style.opacity = 1;
+    hint.textContent = '\u25B6 CLICK TO SEE NEXT GEAR \u25C0';
+    setTimeout(function(){ hint.style.opacity = 0; }, 1400);
+  });
+
+  /* Pause loop when hero is scrolled out of view */
+  var heroVisible = true;
+  var io = new IntersectionObserver(function(entries){
+    heroVisible = entries[0].isIntersecting;
+  }, {threshold:0});
+  io.observe(hero);
 
   function draw(){
-    const w=hero.offsetWidth,h=hero.offsetHeight;
-    smooth.x+=(mouse.x-smooth.x)*0.13;
-    smooth.y+=(mouse.y-smooth.y)*0.13;
+    if(!heroVisible){ requestAnimationFrame(draw); return; }
+    var w = hero.offsetWidth, h = hero.offsetHeight;
+    smooth.x += (mouse.x - smooth.x) * 0.13;
+    smooth.y += (mouse.y - smooth.y) * 0.13;
 
-    trail.unshift({x:smooth.x,y:smooth.y});
-    if(trail.length>TRAIL_LENGTH) trail.length=TRAIL_LENGTH;
+    trail.unshift({x:smooth.x, y:smooth.y});
+    if(trail.length > TRAIL_LENGTH) trail.length = TRAIL_LENGTH;
 
     ctx.clearRect(0,0,w,h);
-    const cb=cover(bottom,w,h);
-    ctx.drawImage(bottom,cb[0],cb[1],cb[2],cb[3]);
-    ctx.fillStyle=OVERLAY;
+    var cb = cover(bottom, w, h);
+    ctx.drawImage(bottom, cb[0],cb[1],cb[2],cb[3]);
+    ctx.fillStyle = OVERLAY;
     ctx.fillRect(0,0,w,h);
 
     offc.clearRect(0,0,w,h);
-    offc.globalCompositeOperation='source-over';
-    for(let i=0;i<trail.length;i++){
-      const t=1-i/trail.length;
-      const r=HEAD_RADIUS*(0.25+0.75*t);
-      const alpha=Math.pow(t,1.5);
+    offc.globalCompositeOperation = 'source-over';
+    for(var i=0; i<trail.length; i++){
+      var t = 1 - i/trail.length;
+      var r = HEAD_RADIUS * (0.25 + 0.75*t);
+      var alpha = Math.pow(t,1.5);
       offc.beginPath();
-      offc.arc(trail[i].x,trail[i].y,r,0,Math.PI*2);
-      offc.fillStyle='rgba(0,0,0,'+alpha+')';
+      offc.arc(trail[i].x, trail[i].y, r, 0, Math.PI*2);
+      offc.fillStyle = 'rgba(0,0,0,'+alpha+')';
       offc.fill();
     }
-    offc.globalCompositeOperation='source-in';
-    const ct=cover(top,w,h);
-    offc.drawImage(top,ct[0],ct[1],ct[2],ct[3]);
-    offc.globalCompositeOperation='source-atop';
-    offc.fillStyle=OVERLAY;
+    offc.globalCompositeOperation = 'source-in';
+    var ct = cover(activeTop, w, h);
+    offc.drawImage(activeTop, ct[0],ct[1],ct[2],ct[3]);
+    offc.globalCompositeOperation = 'source-atop';
+    offc.fillStyle = OVERLAY;
     offc.fillRect(0,0,w,h);
 
-    ctx.drawImage(off,0,0,w,h);
+    ctx.drawImage(off, 0,0,w,h);
 
     if(trail.length){
-      const head=trail[0];
-      const glow=ctx.createRadialGradient(head.x,head.y,0,head.x,head.y,HEAD_RADIUS*1.45);
-      glow.addColorStop(0,'rgba(255,245,215,0.30)');
-      glow.addColorStop(0.45,'rgba(244,196,48,0.14)');
-      glow.addColorStop(1,'rgba(0,0,0,0)');
+      var head = trail[0];
+      var glow = ctx.createRadialGradient(head.x,head.y,0, head.x,head.y,HEAD_RADIUS*1.45);
+      glow.addColorStop(0,    'rgba(255,245,215,0.30)');
+      glow.addColorStop(0.45, 'rgba(244,196,48,0.14)');
+      glow.addColorStop(1,    'rgba(0,0,0,0)');
       ctx.beginPath();
-      ctx.arc(head.x,head.y,HEAD_RADIUS*1.45,0,Math.PI*2);
-      ctx.fillStyle=glow; ctx.fill();
+      ctx.arc(head.x, head.y, HEAD_RADIUS*1.45, 0, Math.PI*2);
+      ctx.fillStyle = glow; ctx.fill();
     }
     requestAnimationFrame(draw);
   }
 
-  let loaded=0;
-  const onLoad=function(){ if(++loaded===2) draw(); };
-  bottom.onload=onLoad; top.onload=onLoad;
+  var loaded = 0;
+  function onLoad(){ if(++loaded === 2) draw(); }
+  bottom.onload      = onLoad;
+  gearImgs[0].onload = onLoad;
+  if(bottom.complete)      onLoad();
+  if(gearImgs[0].complete) onLoad();
 })();
 </script>
 </body>
