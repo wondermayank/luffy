@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -85,11 +84,10 @@ body { background:#04060c; color:#fff; font-family:'Bebas Neue',sans-serif; }
 ═══════════════════════════════════════════════ */
 #page {
   height:100vh; overflow-y:auto; overflow-x:hidden;
-  /* On mobile, require 2-finger pan to scroll */
   touch-action:pan-y;
 }
-/* Override: hero itself needs single-touch for the reveal drag */
-#hero { touch-action:none; }
+/* Hero allows touch so JS can intercept */
+#hero { touch-action:auto; }
 
 /* ═══════════════════════════════════════════════
    HERO
@@ -359,9 +357,191 @@ footer {
   /* hint bar moves up a bit so it doesn't clash with footer on short screens */
   .hint{bottom:56px;}
 }
+
+/* ═══════════════════════════════════════════════
+   DEVIL FRUIT BUBBLES (background canvas)
+═══════════════════════════════════════════════ */
+#bubble-canvas {
+  position:absolute; inset:0; width:100%; height:100%;
+  z-index:1; pointer-events:none; opacity:0.45;
+}
+
+/* ═══════════════════════════════════════════════
+   GEAR FLASH
+═══════════════════════════════════════════════ */
+#gear-flash {
+  position:fixed; inset:0; z-index:500;
+  background:#fff; opacity:0; pointer-events:none;
+  transition:none;
+}
+#gear-flash.flash {
+  animation:gflash .55s ease-out forwards;
+}
+@keyframes gflash {
+  0%  { opacity:0.9; }
+  30% { opacity:0.6; }
+  100%{ opacity:0; }
+}
+
+/* ═══════════════════════════════════════════════
+   BOUNTY POSTER
+═══════════════════════════════════════════════ */
+#bounty-overlay {
+  position:fixed; inset:0; z-index:800;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(0,0,0,0.78);
+  opacity:0; pointer-events:none;
+  transition:opacity .35s ease;
+}
+#bounty-overlay.open {
+  opacity:1; pointer-events:all;
+}
+.bounty-poster {
+  position:relative;
+  width:min(400px, 90vw);
+  background:transparent;
+  border:5px solid #8b5e1a;
+  box-shadow:0 0 0 2px #f0c96b, 0 24px 70px rgba(0,0,0,0.85);
+  transform:scale(0.7) rotate(-2deg);
+  transition:transform .45s cubic-bezier(.175,.885,.32,1.275);
+  overflow:hidden;
+  border-radius:2px;
+}
+#bounty-overlay.open .bounty-poster {
+  transform:scale(1) rotate(-1.5deg);
+}
+.bounty-header {
+  display:none;
+}
+.bounty-header-text {
+  font-size:13px; letter-spacing:0.5em; color:#f0c96b;
+  text-shadow:1px 1px 0 #000;
+  font-family:'Bebas Neue',sans-serif;
+}
+.bounty-title { display:none; }
+.bounty-img-wrap {
+  width:100%;
+  background:#c49a3c;
+  overflow:hidden; position:relative;
+  border-top:3px solid #8b5e1a;
+  border-bottom:3px solid #8b5e1a;
+  display:flex; align-items:center; justify-content:center;
+  min-height:320px;
+}
+.bounty-img-wrap img {
+  width:100%; height:100%; object-fit:contain; object-position:center;
+  filter:none;
+  display:block;
+  background:#d4a84b;
+}
+/* aged paper texture overlay */
+.bounty-img-wrap::after {
+  content:''; position:absolute; inset:0;
+  background:repeating-linear-gradient(
+    0deg, transparent, transparent 3px,
+    rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px
+  );
+  mix-blend-mode:multiply;
+}
+.bounty-name { display:none; }
+.bounty-amount-wrap { display:none; }
+.bounty-amount-label {
+  font-family:'Bebas Neue',sans-serif; font-size:11px;
+  letter-spacing:0.45em; color:#5a0e0e; display:block;
+}
+.bounty-amount {
+  font-size:38px; color:#8b1a1a; line-height:1;
+  text-shadow:2px 2px 0 rgba(0,0,0,0.2);
+  letter-spacing:0.02em;
+}
+.bounty-footer { display:none; }
+.bounty-footer-text {
+  font-family:'Bebas Neue',sans-serif; font-size:11px;
+  color:#f0c96b; letter-spacing:0.3em;
+}
+.bounty-stamp { display:none; }
+.bounty-close {
+  position:absolute; top:8px; right:10px;
+  font-family:'Bebas Neue',sans-serif; font-size:22px;
+  color:#f0c96b; cursor:pointer; background:none; border:none;
+  line-height:1; z-index:10; opacity:0.8;
+  transition:opacity .2s;
+}
+.bounty-close:hover { opacity:1; }
+/* corner tears */
+.bounty-poster::before, .bounty-poster::after {
+  content:''; position:absolute; width:24px; height:24px;
+  background:#d4a84b;
+  clip-path:polygon(0 0, 100% 0, 0 100%);
+}
+.bounty-poster::before { top:0; right:0; transform:rotate(90deg); background:#c49a3c; }
+.bounty-poster::after  { bottom:0; left:0; background:#c49a3c; }
+
+/* ═══════════════════════════════════════════════
+   MOBILE BLOCK SCREEN
+═══════════════════════════════════════════════ */
+#mobile-block {
+  display:none;
+  position:fixed; inset:0; z-index:99999;
+  background:#04060c;
+  flex-direction:column; align-items:center; justify-content:center;
+  padding:32px 24px; text-align:center;
+  gap:0;
+}
+#mobile-block .mb-skull {
+  font-size:72px; line-height:1; margin-bottom:20px;
+  animation:skullbob 2s ease-in-out infinite;
+}
+@keyframes skullbob {
+  0%,100%{ transform:translateY(0) rotate(-4deg); }
+  50%    { transform:translateY(-10px) rotate(4deg); }
+}
+#mobile-block .mb-title {
+  font-family:'Bangers',cursive; font-size:52px; line-height:1;
+  color:#F7D446; letter-spacing:0.04em;
+  -webkit-text-stroke:2px #0a1a3a;
+  text-shadow:3px 3px 0 #b3001a, 0 0 20px rgba(244,196,48,0.5);
+  margin-bottom:10px;
+}
+#mobile-block .mb-divider {
+  width:80px; height:2px;
+  background:linear-gradient(90deg,transparent,#F4C430,transparent);
+  margin:14px auto 18px;
+}
+#mobile-block .mb-msg {
+  font-family:'Cormorant Garamond',Georgia,serif; font-style:italic;
+  font-size:20px; color:rgba(255,255,255,0.75); line-height:1.6;
+  max-width:320px; margin-bottom:8px;
+}
+#mobile-block .mb-sub {
+  font-family:'Bebas Neue',sans-serif; font-size:13px;
+  letter-spacing:0.4em; color:rgba(255,255,255,0.35);
+  margin-top:6px;
+}
+#mobile-block .mb-badge {
+  margin-top:32px;
+  font-family:'Bebas Neue',sans-serif; font-size:12px; letter-spacing:0.35em;
+  color:#F4C430; padding:8px 20px;
+  border:1px solid rgba(244,196,48,0.3); border-radius:2px;
+  clip-path:polygon(6px 0%,100% 0%,calc(100% - 6px) 100%,0% 100%);
+}
+@media (max-width:768px){
+  #mobile-block { display:flex; }
+  #page { display:none; }
+}
 </style>
 </head>
 <body>
+
+<!-- ══════════════ MOBILE BLOCK ══════════════ -->
+<div id="mobile-block">
+  <div class="mb-skull">&#9760;</div>
+  <div class="mb-title">AHOY, PIRATE!</div>
+  <div class="mb-divider"></div>
+  <p class="mb-msg">This treasure can only be found on a bigger ship &mdash; open it on a desktop or laptop to set sail.</p>
+  <p class="mb-sub">Mobile access is currently restricted</p>
+  <div class="mb-badge">&#9656; RETURN ON PC &nbsp;·&nbsp; THE ADVENTURE AWAITS &#9666;</div>
+</div>
 
 <!-- ══════════════ LOADING SCREEN ══════════════ -->
 <div id="loader">
@@ -389,6 +569,7 @@ footer {
   <!-- HERO -->
   <div class="hero" id="hero">
     <canvas class="hero-canvas" id="cv"></canvas>
+    <canvas id="bubble-canvas"></canvas>
 
     <div class="logo">
       <div class="op">One Piece</div>
@@ -400,7 +581,7 @@ footer {
         <span class="eyebrow">Straw Hat Pirates</span>
         <h1 class="title">MONKEY D.<br>LUFFY</h1>
         <p class="desc">The boy who would be King of the Pirates. Rubber fists, an iron will, and a grin that never quits &mdash; chasing the world's greatest treasure.</p>
-        <button class="btn">Set Sail</button>
+        <button class="btn" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Contact</button>
       </div>
       <div class="right">
         <span class="eyebrow" id="rightEyebrow">Joy Boy Awakened</span>
@@ -445,6 +626,7 @@ footer {
       <a class="soc-btn" href="https://wondermayank.in" target="_blank" rel="noopener">wondermayank.in</a>
       <a class="soc-btn" href="https://t.me/wondermayank" target="_blank" rel="noopener">Telegram</a>
       <a class="soc-btn" href="https://luffykidlaw.indevs.in" target="_blank" rel="noopener">This Site</a>
+      <button class="soc-btn" id="rewardBtn">3,000,000,000&#9733;</button>
     </div>
   </section>
 
@@ -485,23 +667,55 @@ footer {
 })();
 
 /* ══════════════════════════════════════
-   MOBILE 2-FINGER HINT
+   2-FINGER SCROLL ON HERO (mobile)
+   • 1 finger inside hero  → reveal drag, page scroll blocked
+   • 2 fingers anywhere    → normal page scroll, always works
+   • 1 finger outside hero → normal page scroll
 ══════════════════════════════════════ */
 (function(){
-  var hint = document.getElementById('twoFingerHint');
-  var page = document.getElementById('page');
-  if(!hint) return;
-
-  // Show hint briefly when user tries single-finger scroll on mobile
+  var hint   = document.getElementById('twoFingerHint');
+  var hero   = document.getElementById('hero');
+  var page   = document.getElementById('page');
   var hintTimer;
-  page.addEventListener('touchstart', function(e){
-    if(e.touches.length === 1){
-      // single finger — flash the hint
-      hint.style.opacity = '1';
-      clearTimeout(hintTimer);
-      hintTimer = setTimeout(function(){ hint.style.opacity = '0'; }, 2000);
+
+  function showHint(){
+    if(!hint) return;
+    hint.style.opacity = '1';
+    clearTimeout(hintTimer);
+    hintTimer = setTimeout(function(){ hint.style.opacity = '0'; }, 2000);
+  }
+  function hideHint(){
+    if(!hint) return;
+    clearTimeout(hintTimer);
+    hint.style.opacity = '0';
+  }
+
+  /* Block single-finger vertical scroll ONLY when touch starts on hero */
+  var touchOnHero = false;
+  var startY = 0;
+
+  document.addEventListener('touchstart', function(e){
+    touchOnHero = hero.contains(e.target);
+    startY = e.touches[0] ? e.touches[0].clientY : 0;
+  }, {passive:true});
+
+  document.addEventListener('touchmove', function(e){
+    var fingers = e.touches.length;
+
+    if(touchOnHero && fingers === 1){
+      /* Single finger on hero — block page scroll, show hint */
+      e.preventDefault();
+      showHint();
     } else {
-      hint.style.opacity = '0';
+      hideHint();
+    }
+  }, {passive:false}); /* passive:false so preventDefault works */
+
+  /* 2-finger scroll on hero — let page scroll, hide hint */
+  hero.addEventListener('touchmove', function(e){
+    if(e.touches.length >= 2){
+      hideHint();
+      /* do NOT preventDefault — let #page scroll naturally */
     }
   }, {passive:true});
 })();
@@ -621,8 +835,11 @@ footer {
     }
   }, {passive:true});
 
-  /* Click — cycle gears */
+  /* Click — flash + cycle gears */
   hero.addEventListener('click', function(){
+    /* Gear flash */
+    if(window._gearFlash) window._gearFlash();
+
     gearIndex = (gearIndex + 1) % GEARS.length;
     activeTop = gearImgs[gearIndex];
     var g = GEARS[gearIndex];
@@ -633,7 +850,12 @@ footer {
     hint.style.opacity = 1;
     hint.textContent = '\u25B6 CLICK TO SEE NEXT GEAR \u25C0';
     setTimeout(function(){ hint.style.opacity = 0; }, 1400);
+
+    /* Tell bounty poster which gear is active */
+    window.dispatchEvent(new CustomEvent('gearChanged', {detail:{index:gearIndex}}));
   });
+
+  /* Bounty poster triggered from contact section only */
 
   /* Pause loop when hero is scrolled out of view */
   var heroVisible = true;
@@ -697,6 +919,194 @@ footer {
   if(bottom.complete)      onLoad();
   if(gearImgs[0].complete) onLoad();
 })();
+
+/* ══════════════════════════════════════
+   DEVIL FRUIT BUBBLES
+══════════════════════════════════════ */
+window.addEventListener('DOMContentLoaded', function(){
+(function(){
+  var bc  = document.getElementById('bubble-canvas');
+  var bx  = bc.getContext('2d');
+  var hero = document.getElementById('hero');
+  var bubbles = [];
+  var NUM = 38;
+
+  function resize(){
+    bc.width  = hero.offsetWidth;
+    bc.height = hero.offsetHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  /* spiral pattern points on a devil fruit (swirl) */
+  function makeBubble(){
+    return {
+      x: Math.random() * bc.width,
+      y: bc.height + Math.random() * 80,
+      r: 3 + Math.random() * 9,
+      speed: 0.3 + Math.random() * 0.7,
+      drift: (Math.random() - 0.5) * 0.6,
+      opacity: 0.12 + Math.random() * 0.25,
+      wobble: Math.random() * Math.PI * 2,
+      wobbleSpeed: 0.01 + Math.random() * 0.02,
+      /* devil-fruit swirl marks inside */
+      swirl: Math.random() > 0.5,
+      hue: Math.random() > 0.6 ? 'rgba(244,196,48,' : 'rgba(255,255,255,'
+    };
+  }
+
+  for(var i=0; i<NUM; i++){
+    var b = makeBubble();
+    b.y = Math.random() * bc.height; /* scatter initial positions */
+    bubbles.push(b);
+  }
+
+  var heroVis = true;
+  var io2 = new IntersectionObserver(function(e){ heroVis = e[0].isIntersecting; },{threshold:0});
+  io2.observe(hero);
+
+  function drawBubble(b){
+    bx.save();
+    bx.globalAlpha = b.opacity;
+    /* outer ring */
+    bx.beginPath();
+    bx.arc(b.x, b.y, b.r, 0, Math.PI*2);
+    bx.strokeStyle = b.hue + '0.9)';
+    bx.lineWidth = 1.2;
+    bx.stroke();
+    /* inner highlight */
+    bx.beginPath();
+    bx.arc(b.x - b.r*0.3, b.y - b.r*0.3, b.r*0.28, 0, Math.PI*2);
+    bx.fillStyle = 'rgba(255,255,255,0.6)';
+    bx.fill();
+    /* swirl mark (devil fruit pattern) */
+    if(b.swirl && b.r > 5){
+      bx.beginPath();
+      bx.arc(b.x, b.y, b.r*0.55, 0.3, Math.PI+0.3);
+      bx.strokeStyle = b.hue + '0.5)';
+      bx.lineWidth = 0.8;
+      bx.stroke();
+    }
+    bx.restore();
+  }
+
+  function animBubbles(){
+    if(!heroVis){ requestAnimationFrame(animBubbles); return; }
+    bx.clearRect(0, 0, bc.width, bc.height);
+    for(var i=0; i<bubbles.length; i++){
+      var b = bubbles[i];
+      b.wobble += b.wobbleSpeed;
+      b.x += Math.sin(b.wobble) * 0.4 + b.drift;
+      b.y -= b.speed;
+      if(b.y + b.r < 0){
+        /* reset to bottom */
+        var nb = makeBubble();
+        bubbles[i] = nb;
+      } else {
+        drawBubble(b);
+      }
+    }
+    requestAnimationFrame(animBubbles);
+  }
+  animBubbles();
+})();
+}); // DOMContentLoaded bubbles
+
+/* ══════════════════════════════════════
+   BOUNTY POSTER + GEAR FLASH
+══════════════════════════════════════ */
+window.addEventListener('DOMContentLoaded', function(){
+(function(){
+  var overlay   = document.getElementById('bounty-overlay');
+  var closeBtn  = document.getElementById('bountyClose');
+  var flash     = document.getElementById('gear-flash');
+  var bountyImg = document.getElementById('bountyImg');
+  var bountyAmount = document.getElementById('bountyAmount');
+  var bountyGear   = document.getElementById('bountyGear');
+  var bountyStamp  = document.getElementById('bountyStamp');
+
+  /* Per-gear bounty data */
+  var BOUNTY_DATA = [
+    { amount:'3,000,000,000', gear:'GEAR 5', stamp:'JOY BOY\nNIKA',    img:'https://weebshop.in/cdn/shop/files/Luffy-G5-Golden-Bounty-3.jpg?v=1688536276&width=1445' },
+    { amount:'1,500,000,000', gear:'GEAR 4', stamp:'BOUND\nMAN',       img:'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSW0ER9YEbSiKqw7rGezzRud_Qt9U8tbtoBAA14W_vnqoDMcATAokGh2Yw7&s=10' },
+    { amount:'400,000,000',   gear:'GEAR 3', stamp:'GIANT\nFIST',      img:'https://i.pinimg.com/236x/b2/34/6a/b2346aef11d6940d56cdad24b7f15300.jpg' }
+  ];
+  var currentGearIdx = 0; /* kept in sync with hero gear index */
+
+  /* Listen for gear changes dispatched from hero click */
+  window.addEventListener('gearChanged', function(e){
+    currentGearIdx = e.detail.index;
+  });
+
+  /* Open poster */
+  function openPoster(){
+    var d = BOUNTY_DATA[currentGearIdx];
+    bountyImg.src        = d.img;
+    bountyAmount.textContent = d.amount;
+    bountyGear.textContent   = d.gear;
+    bountyStamp.innerHTML    = d.stamp.replace('\n','<br>');
+    overlay.classList.add('open');
+  }
+
+  /* Close poster */
+  function closePoster(){
+    overlay.classList.remove('open');
+  }
+
+  closeBtn.addEventListener('click', closePoster);
+  overlay.addEventListener('click', function(e){
+    if(e.target === overlay) closePoster();
+  });
+
+  /* Expose open function globally */
+  window._openBounty = openPoster;
+
+  /* Secret reward button in contact section */
+  var rewardBtn = document.getElementById('rewardBtn');
+  if(rewardBtn){
+    rewardBtn.addEventListener('click', function(e){
+      e.stopPropagation();
+      openPoster();
+    });
+  }
+
+  /* Expose flash globally */
+  window._gearFlash = function(){
+    flash.classList.remove('flash');
+    /* force reflow */
+    void flash.offsetWidth;
+    flash.classList.add('flash');
+  };
+})();
+}); // DOMContentLoaded bounty
 </script>
+
+<!-- GEAR FLASH -->
+<div id="gear-flash"></div>
+
+<!-- BOUNTY POSTER OVERLAY -->
+<div id="bounty-overlay">
+  <div class="bounty-poster" id="bountyPoster">
+    <button class="bounty-close" id="bountyClose">&#x2715;</button>
+    <div class="bounty-header">
+      <div class="bounty-header-text">WORLD GOVERNMENT &nbsp;·&nbsp; MARINE HEADQUARTERS</div>
+    </div>
+    <div class="bounty-title" id="bountyWanted">WANTED</div>
+    <div class="bounty-img-wrap">
+      <img id="bountyImg" src="https://weebshop.in/cdn/shop/files/Luffy-G5-Golden-Bounty-3.jpg?v=1688536276&width=1445" alt="Wanted Poster">
+    </div>
+    <div class="bounty-name" id="bountyName">MONKEY D. LUFFY</div>
+    <div class="bounty-amount-wrap">
+      <span class="bounty-amount-label">REWARD</span>
+      <div class="bounty-amount" id="bountyAmount">3,000,000,000</div>
+      <span class="bounty-amount-label" style="margin-top:2px">BERRIES &nbsp;·&nbsp; DEAD OR ALIVE</span>
+    </div>
+    <div class="bounty-stamp" id="bountyStamp">JOY<br>BOY<br>NIKA</div>
+    <div class="bounty-footer">
+      <span class="bounty-footer-text">ONE PIECE WORLD</span>
+      <span class="bounty-footer-text" id="bountyGear">GEAR 5</span>
+    </div>
+  </div>
+</div>
 </body>
 </html>
